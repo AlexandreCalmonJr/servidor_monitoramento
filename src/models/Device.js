@@ -1,51 +1,25 @@
 // Ficheiro: src/models/Device.js
-// ------------------------------
-// Define o 'Schema' e o 'Modelo' (Model) do Mongoose para um Dispositivo.
-// Descreve a estrutura dos documentos que serão armazenados na coleção 'devices'.
+// DESCRIÇÃO: Adicionado o campo 'biometricReaderStatus' ao schema do MongoDB.
 
 const mongoose = require('mongoose');
 
 const deviceSchema = new mongoose.Schema({
-  hostname: {
-    type: String,
-    required: true,
-  },
-  serialNumber: {
-    type: String,
-    required: true,
-    unique: true, // Garante que o número de série seja único
-    index: true,  // Cria um índice para buscas rápidas
-  },
-  serviceTag: String,
-  model: String,
-  ipAddress: {
-    type: String,
-    required: true,
-  },
-  location: {
-    type: String,
-    required: true,
-    default: 'Desconhecida',
-  },
-  installedPrograms: {
-    type: [String], // Armazena uma lista de strings
-    default: [],
-  },
-  printerStatus: {
-    type: String,
-    default: 'N/A',
-  },
-  lastSeen: {
-    type: Date,
-    default: Date.now,
-  },
+  hostname: { type: String, required: true },
+  serialNumber: { type: String, required: true, unique: true },
+  model: { type: String, default: 'N/A' },
+  serviceTag: { type: String, default: 'N/A' },
+  ip: { type: String, default: 'N/A' },
+  location: { type: String, default: 'Desconhecida' },
+  installedPrograms: { type: [String], default: [] },
+  printerStatus: { type: String, default: 'N/A' },
+  lastSeen: { type: Date, default: Date.now },
+  // NOVO CAMPO ADICIONADO AO MODELO
+  biometricReaderStatus: { type: String, default: 'N/A' },
 }, {
-  // Opções do Schema
-  timestamps: true, // Cria os campos 'createdAt' e 'updatedAt' automaticamente
+  // timestamps: true, // Descomente se quiser os campos createdAt e updatedAt
+  versionKey: false // Não cria o campo __v
 });
 
-// Cria o modelo 'Device' que irá interagir com a coleção 'devices' no MongoDB
 const Device = mongoose.model('Device', deviceSchema);
 
 module.exports = Device;
-

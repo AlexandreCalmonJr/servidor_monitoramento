@@ -1,23 +1,31 @@
 // Ficheiro: src/routes/api.js
-// ---------------------------
-// Este ficheiro define os endpoints da nossa API REST. Ele associa as rotas
-// (ex: /monitor, /devices) aos métodos correspondentes no controlador de dispositivos.
+// DESCRIÇÃO: Corrigido para garantir que todos os controladores são importados e usados corretamente.
 
 const express = require('express');
 const router = express.Router();
+
+// Importar os controladores
 const deviceController = require('../controllers/deviceController');
+const mappingController = require('../controllers/mappingController');
 
-// Rota para o agente enviar os dados de monitoramento.
-// POST /api/monitor
-router.post('/monitor', deviceController.handleMonitoringData);
+// --- Rotas para Dispositivos ---
+// Esta rota recebe os dados dos agentes Flutter
+router.post('/monitor', deviceController.handleDeviceData);
 
-// Rota para o painel de controlo obter a lista de todos os dispositivos.
-// GET /api/devices
-router.get('/devices', deviceController.getAllDevices);
+// Esta rota fornece a lista de dispositivos para o painel de controlo
+router.get('/devices', deviceController.getDevices);
 
-// Rota para o painel de controlo obter os detalhes de um dispositivo específico.
-// GET /api/devices/:id
-router.get('/devices/:id', deviceController.getDeviceById);
+
+// --- Rotas para Mapeamentos de IP ---
+// Fornece a lista de mapeamentos
+router.get('/mappings', mappingController.getMappings);
+
+// Cria um novo mapeamento
+router.post('/mappings', mappingController.createMapping);
+
+// Elimina um mapeamento existente
+router.delete('/mappings/:id', mappingController.deleteMapping);
+
 
 module.exports = router;
 

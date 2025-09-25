@@ -1,33 +1,23 @@
 // Ficheiro: src/app.js
-// --------------------
-// Este ficheiro é responsável por configurar a instância da aplicação Express.
-// Ele define os middlewares globais (CORS, JSON parser, logs) e associa as rotas da API.
+// Descrição: Atualizado para usar as novas rotas de mapeamento.
 
 const express = require('express');
 const cors = require('cors');
-const apiRoutes = require('./routes/api');
+const apiRoutes = require('./routes/api'); // As rotas agora incluem /mappings
 
 const app = express();
 
-// Middlewares essenciais
-// Habilita o CORS para permitir requisições do painel de controlo (frontend)
+// Middlewares
 app.use(cors());
+app.use(express.json()); // Permite que o servidor entenda JSON
 
-// Permite que o servidor entenda JSON no corpo das requisições
-app.use(express.json({ limit: '10mb' }));
-
-// Middleware para logar cada requisição recebida
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] Recebida requisição: ${req.method} ${req.path}`);
-  next();
-});
-
-// Define a rota principal da API
+// Usar as rotas da API
+// Todas as rotas (devices e mappings) são geridas pelo apiRoutes
 app.use('/api', apiRoutes);
 
-// Rota de "health check" para verificar se o servidor está online
+// Rota de saúde da aplicação
 app.get('/', (req, res) => {
-  res.status(200).send('Servidor de Monitoramento está online e operacional!');
+  res.send('Servidor de Monitoramento está no ar!');
 });
 
 module.exports = app;

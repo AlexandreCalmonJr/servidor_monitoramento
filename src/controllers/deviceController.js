@@ -1,73 +1,44 @@
 // Ficheiro: src/controllers/deviceController.js
-// ---------------------------------------------
-// O 'Controlador' (Controller) lida com a lógica da requisição HTTP. Ele recebe
-// a requisição, chama os serviços apropriados para executar a lógica de negócio
-// e, finalmente, envia a resposta de volta ao cliente.
+// DESCRIÇÃO: Corrigido para usar a exportação direta de funções, resolvendo o erro 'undefined'.
 
 const deviceService = require('../services/deviceService');
 const ipMappingService = require('../services/ipMappingService');
 
 /**
- * Lida com os dados recebidos do agente de monitoramento.
+ * Lida com os dados de monitoramento recebidos de um agente.
  */
-const handleMonitoringData = async (req, res) => {
+exports.handleDeviceData = async (req, res) => {
   try {
     const data = req.body;
-    // Extrai o IP do cliente da requisição
-    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    
-    // Mapeia a localização com base no IP
-    const location = ipMappingService.getLocationFromIp(clientIp);
+    // Ouve o IP de origem da requisição para mapear a localização
+    const clientIp = req.socket.remoteAddress?.split(':').pop() || req.ip;
+    const location = await ipMappingService.getLocationFromIp(clientIp);
 
-    // Adiciona os dados de IP e localização ao objeto
-    const completeData = {
-      ...data,
-      ipAddress: clientIp.split(':').pop(), // Limpeza para IPv4 em ambiente IPv6
-      location,
-    };
+    // Adiciona o IP e a localização aos dados antes de salvar
+    const fullData = { ...data, ip: clientIp, location: location };
 
-    // Usa o serviço para criar ou atualizar o dispositivo no banco de dados
-    const device = await deviceService.createOrUpdateDevice(completeData);
-    
-    res.status(200).json({ message: 'Dados processados com sucesso!', deviceId: device.id });
+    const device = await deviceService.createOrUpdate(fullData);
+    res.status(200).json({
+      message: 'Dados recebidos e processados com sucesso.',
+      deviceId: device._id,
+      location: location
+    });
   } catch (error) {
-    console.error("Erro no controlador handleMonitoringData:", error.message);
-    res.status(500).json({ message: "Erro interno do servidor.", error: error.message });
+    console.error('Erro em handleDeviceData:', error);
+    res.status(500).json({ message: 'Erro interno do servidor ao processar dados.', error: error.message });
   }
 };
 
 /**
- * Obtém todos os dispositivos para o painel de controlo.
+ * Retorna uma lista de todos os dispositivos monitorados.
  */
-const getAllDevices = async (req, res) => {
+exports.getDevices = async (req, res) => {
   try {
-    const devices = await deviceService.findAllDevices();
+    const devices = await deviceService.getAll();
     res.status(200).json(devices);
   } catch (error) {
-    console.error("Erro no controlador getAllDevices:", error.message);
-    res.status(500).json({ message: "Erro ao buscar dispositivos." });
+    console.error('Erro em getDevices:', error);
+    res.status(500).json({ message: 'Erro ao buscar dispositivos.', error: error.message });
   }
-};
-
-/**
- * Obtém um dispositivo específico pelo seu ID.
- */
-const getDeviceById = async (req, res) => {
-  try {
-    const device = await deviceService.findDeviceById(req.params.id);
-    if (!device) {
-      return res.status(404).json({ message: 'Dispositivo não encontrado.' });
-    }
-    res.status(200).json(device);
-  } catch (error) {
-    console.error("Erro no controlador getDeviceById:", error.message);
-    res.status(500).json({ message: "Erro ao buscar o dispositivo." });
-  }
-};
-
-module.exports = {
-  handleMonitoringData,
-  getAllDevices,
-  getDeviceById,
 };
 
