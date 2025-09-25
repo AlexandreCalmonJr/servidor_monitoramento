@@ -18,7 +18,7 @@ router.get('/devices', deviceController.getDevices);
 
 // --- Rotas para Mapeamentos de IP ---
 // Fornece a lista de mapeamentos
-router.get('/mappings', mappingController.getMappings);
+router.get('/mappings', mappingController.getAllMappings);
 
 // Cria um novo mapeamento
 router.post('/mappings', mappingController.createMapping);
