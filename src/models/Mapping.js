@@ -1,26 +1,30 @@
 // Ficheiro: src/models/Mapping.js
-// Descrição: Define a estrutura (schema) para os mapeamentos na base de dados.
+// DESCRIÇÃO: O modelo foi atualizado para usar uma faixa de IPs (ipStart, ipEnd) em vez de um prefixo.
 
 const mongoose = require('mongoose');
 
 const mappingSchema = new mongoose.Schema({
-  // Ex: "192.168.1."
-  ipPrefix: {
-    type: String,
-    required: [true, 'O prefixo de IP é obrigatório.'],
-    unique: true,
-    trim: true,
-  },
-  // Ex: "Unidade Salvador"
   location: {
     type: String,
-    required: [true, 'A localização é obrigatória.'],
+    required: true,
     trim: true,
   },
-}, { 
-  timestamps: true // Adiciona os campos createdAt e updatedAt automaticamente
+  ipStart: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  ipEnd: {
+    type: String,
+    required: true,
+    trim: true,
+  },
 });
+
+// Evita a criação de registos duplicados com a mesma localização
+mappingSchema.index({ location: 1 }, { unique: true });
 
 const Mapping = mongoose.model('Mapping', mappingSchema);
 
 module.exports = Mapping;
+

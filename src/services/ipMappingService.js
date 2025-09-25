@@ -1,38 +1,43 @@
 // Ficheiro: src/services/ipMappingService.js
-// -----------------------------------------
-// Este serviço contém uma lógica de negócio específica e reutilizável:
-// mapear um endereço IP a uma localização física pré-definida.
+// DESCRIÇÃO: A lógica principal foi alterada para verificar se um IP está dentro de uma faixa (range).
 
-// No futuro, esta configuração pode ser movida para o banco de dados para ser dinâmica.
-const networkMap = {
-  '10.71.2.': 'Salvador',
-  '10.80.1.': 'Feira de Santana',
-  '192.168.1.': 'Escritório Central',
-  '127.0.0.1': 'Localhost',
-  '::1': 'Localhost',
-  // Adicione outras sub-redes e suas respectivas localizações aqui
-};
+const Mapping = require('../models/Mapping');
 
-/**
- * Obtém o nome da localização com base no endereço IP.
- * @param {string} ip O endereço IP a ser verificado.
- * @returns {string} O nome da localização ou 'Localização Desconhecida'.
- */
-function getLocationFromIp(ip) {
-  if (!ip) return 'IP Inválido';
-
-  // Trata casos de IPv4 mapeado em endereço IPv6
-  const cleanIp = ip.includes(':') ? ip.split(':').pop() : ip;
-
-  for (const networkPrefix in networkMap) {
-    if (cleanIp.startsWith(networkPrefix)) {
-      return networkMap[networkPrefix];
-    }
-  }
-  return 'Localização Desconhecida';
+// Função auxiliar para converter um endereço IP (string) num número para fácil comparação.
+function ipToNumber(ip) {
+  if (!ip || typeof ip !== 'string') return 0;
+  return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0);
 }
 
-module.exports = {
-  getLocationFromIp,
-};
+/**
+ * Encontra a localização de um dispositivo com base no seu endereço IP,
+ * verificando se ele se enquadra em alguma das faixas de IP definidas.
+ * @param {string} ip - O endereço IP do dispositivo.
+ * @returns {Promise<string>} A localização correspondente ou 'Localização Desconhecida'.
+ */
+async function getLocationFromIp(ip) {
+  if (!ip) return 'Localização Desconhecida';
+
+  try {
+    const requestIpNum = ipToNumber(ip);
+    const mappings = await Mapping.find({});
+
+    for (const mapping of mappings) {
+      const startIpNum = ipToNumber(mapping.ipStart);
+      const endIpNum = ipToNumber(mapping.ipEnd);
+
+      // Verifica se o IP do dispositivo está entre o início e o fim da faixa.
+      if (requestIpNum >= startIpNum && requestIpNum <= endIpNum) {
+        return mapping.location; // Retorna a primeira localização correspondente que encontrar.
+      }
+    }
+
+    return 'Localização Desconhecida';
+  } catch (error) {
+    console.error("Erro ao mapear IP para localização:", error);
+    return 'Localização Desconhecida';
+  }
+}
+
+module.exports = { getLocationFromIp };
 
