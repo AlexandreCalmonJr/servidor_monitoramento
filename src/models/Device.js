@@ -18,6 +18,9 @@ const deviceSchema = new mongoose.Schema({
   zebraStatus: { type: String, default: 'N/A' },
   bematechStatus: { type: String, default: 'N/A' },
   totemType: { type: String, default: 'N/A' },
+  ram: { type: String, default: 'N/A' },
+  hdType: { type: String, default: 'N/A' },
+  hdStorage: { type: String, default: 'N/A' },
 }, {
   // timestamps: true, // Descomente se quiser os campos createdAt e updatedAt
   versionKey: false // Não cria o campo __v
